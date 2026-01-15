@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -17,6 +18,7 @@ public class UserResponse {
     private String role;
     private boolean active;
     private boolean emailVerified;
+    private Set<String> favoriteCategories;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -28,6 +30,7 @@ public class UserResponse {
                 user.getRole().name(),
                 user.isActive(),
                 user.isEmailVerified(),
+                user.getFavoriteCategories(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

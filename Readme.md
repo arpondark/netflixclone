@@ -49,8 +49,11 @@ The application uses the following database schema:
 ```mermaid
 erDiagram
     USERS ||--o{ USER_WATCHLIST : has
+    USERS ||--o{ USER_FAVORITE_CATEGORIES : has
+    USERS ||--o{ VIDEO_VIEWS : records
     VIDEOS ||--o{ USER_WATCHLIST : contains
     VIDEOS ||--o{ VIDEO_CATEGORIES : has
+    VIDEOS ||--o{ VIDEO_VIEWS : tracked
     
     USERS {
         bigint id PK
@@ -100,13 +103,28 @@ erDiagram
         bigint user_id FK
         bigint video_id FK
     }
+    
+    USER_FAVORITE_CATEGORIES {
+        bigint user_id FK
+        varchar category_name "Max 3 per user"
+    }
+    
+    VIDEO_VIEWS {
+        bigint id PK
+        bigint user_id FK
+        bigint video_id FK
+        timestamp viewedAt
+    }
 ```
 
 ### Entity Relationships
 
 - **Users to Watchlist**: One-to-Many (A user can have multiple videos in their watchlist)
+- **Users to Favorite Categories**: One-to-Many (A user can select up to 3 favorite categories)
+- **Users to Video Views**: One-to-Many (A user can view multiple videos)
 - **Videos to Watchlist**: One-to-Many (A video can be in multiple users' watchlists)
 - **Videos to Categories**: One-to-Many (A video can have multiple categories)
+- **Videos to Views**: One-to-Many (A video can be viewed by multiple users)
 - **Categories**: Standalone table with predefined movie/show categories
 
 ### Key Constraints
@@ -115,6 +133,8 @@ erDiagram
 - Video title, description, src (video file), and poster (image) are required
 - Video categories are stored in a separate join table for flexibility
 - Category names are unique and auto-seeded on application startup
+- Users can select maximum 3 favorite categories
+- Each video view is tracked per user (one view per user per video)
 - Timestamps are automatically managed by Hibernate
 
 ### Auto-Seeded Data
@@ -178,7 +198,8 @@ netflixclone/
 │   │   │   ├── entity/                               # JPA Entities
 │   │   │   │   ├── User.java                         # User entity model
 │   │   │   │   ├── Video.java                        # Video entity model
-│   │   │   │   └── Category.java                     # Category entity model
+│   │   │   │   ├── Category.java                     # Category entity model
+│   │   │   │   └── VideoView.java                    # Video view tracking model
 │   │   │   │
 │   │   │   ├── enums/                                # Enumeration types
 │   │   │   │   └── Role.java                         # User roles enumeration
@@ -201,13 +222,17 @@ netflixclone/
 │   │   │   │   ├── AuthService.java                  # Authentication service interface
 │   │   │   │   ├── EmailService.java                 # Email service interface
 │   │   │   │   ├── AdminService.java                 # Admin service interface
-│   │   │   │   └── VideoService.java                 # Video service interface
+│   │   │   │   ├── VideoService.java                 # Video service interface
+│   │   │   │   ├── CategoryService.java              # Category service interface
+│   │   │   │   └── UserService.java                  # User features service interface
 │   │   │   │
 │   │   │   ├── ServiceImpl/                          # Service Implementations
 │   │   │   │   ├── AuthServiceImpl.java              # Authentication service implementation
 │   │   │   │   ├── EmailServiceImpl.java             # Email service implementation
 │   │   │   │   ├── AdminServiceImpl.java             # Admin service implementation
 │   │   │   │   ├── VideoServiceImpl.java             # Video service implementation
+│   │   │   │   ├── CategoryServiceImpl.java          # Category service implementation
+│   │   │   │   ├── UserServiceImpl.java              # User features service implementation
 │   │   │   │   └── FileStorageService.java           # File storage service
 │   │   │   │
 │   │   │   └── util/                                 # Utility classes
@@ -330,6 +355,20 @@ Import the `Netflix_Clone_Auth_API.postman_collection.json` file into Postman to
 - Update User Profile
 - Deactivate Account
 
+### User Features (Authenticated Users)
+- Get User Profile with Favorite Categories
+- Update Favorite Categories (Max 3)
+- Add Video to Watchlist
+- Remove Video from Watchlist
+- Get User's Watchlist
+- Record Video View (When Opening/Watching)
+- Get Video View Count
+
+### Category Management
+- Get All Active Categories
+- Get All Categories (Admin)
+- Get Category By ID
+
 ### Admin Management (Admin Role Required)
 - Get All Users
 - Get User By ID
@@ -338,12 +377,8 @@ Import the `Netflix_Clone_Auth_API.postman_collection.json` file into Postman to
 - Delete User Account
 - Update User Role
 
-### Video Management
-- Upload Video with Poster Image
-- Add Video Description (up to 4000 characters)
-- Set Video Metadata (year, rating, duration)
-- Add Multiple Categories
-- Set Published Status
+### Video Management (Admin Role Required for Upload)
+- Upload Video with Poster
 - Get Video Details
 - List Videos
 - Update Video Information
@@ -416,64 +451,9 @@ The application supports comprehensive video upload with the following capabilit
 
 **Note**: All three parts (data, video, and poster) are mandatory for successful upload. The data part must include title, description, and at least one category.
 
-### File Storage
-
-Videos and images are stored in separate directories:
-
-```properties
-file.upload.video-dir=uploads/videos
-file.upload.image-dir=uploads/images
-```
-
-Each uploaded file is renamed with a UUID to prevent conflicts:
-- Format: `{UUID}_{original_filename}`
-- Example: `a1b2c3d4-e5f6-7890-abcd-ef1234567890_movie.mp4`
-
-### File Size Limits
-
-Configured for large file uploads:
-
-```properties
-spring.servlet.multipart.max-file-size=5GB
-spring.servlet.multipart.max-request-size=5GB
-```
-
-### Video Response
-
-After successful upload, the API returns:
-
-```json
-{
-  "id": 1,
-  "title": "Movie Title",
-  "description": "Detailed description",
-  "year": 2024,
-  "rating": "PG-13",
-  "duration": 120,
-  "src": "http://localhost:8080/api/files/video/{uuid}",
-  "poster": "http://localhost:8080/api/files/image/{uuid}",
-  "published": true,
-  "categories": ["Action", "Adventure", "Sci-Fi"],
-  "createdAt": "2024-01-16T10:30:00Z",
-  "updatedAt": "2024-01-16T10:30:00Z"
-}
-```
-
-### Usage Examples
-
-#### Upload Video with All Required and Optional Fields
-
-Using cURL:
-```bash
-curl -X POST http://localhost:8080/api/videos/upload \
-  -H "Authorization: Bearer {admin_token}" \
-  -F 'data={"title":"Sample Movie","description":"Full description of the movie with plot details and cast information","year":2024,"rating":"PG-13","duration":120,"published":true,"categories":["Action","Sci-Fi","Adventure"]};type=application/json' \
-  -F 'video=@/path/to/video.mp4' \
-  -F 'poster=@/path/to/poster.jpg'
-```
-
 #### Minimal Upload (Required Fields Only)
 
+Using cURL:
 ```bash
 curl -X POST http://localhost:8080/api/videos/upload \
   -H "Authorization: Bearer {admin_token}" \
@@ -489,6 +469,97 @@ curl -X POST http://localhost:8080/api/videos/upload \
 **Endpoint**: `GET /api/videos`
 
 Returns array of all videos with their complete information including URLs to access the video and poster files.
+
+## User Features
+
+### User Profile with Favorite Categories
+
+Users can personalize their experience by selecting up to 3 favorite categories from the predefined list.
+
+#### Get User Profile
+**Endpoint**: `GET /api/user/profile`
+
+**Authentication**: Required (JWT token)
+
+**Response**:
+```json
+{
+  "id": 2,
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "role": "USER",
+  "active": true,
+  "emailVerified": true,
+  "favoriteCategories": ["Action", "Comedy", "Sci-Fi"],
+  "createdAt": "2026-01-15T10:00:00Z",
+  "updatedAt": "2026-01-16T14:30:00Z"
+}
+```
+
+#### Update Favorite Categories
+**Endpoint**: `PUT /api/user/favorite-categories`
+
+**Authentication**: Required (JWT token)
+
+**Request Body**:
+```json
+{
+  "favoriteCategories": ["Action", "Comedy", "Drama"]
+}
+```
+
+**Constraints**:
+- Minimum: 1 category
+- Maximum: 3 categories
+- Must be valid category names from the predefined list
+
+### Watchlist Management
+
+Users can add videos to their personal watchlist for later viewing.
+
+#### Add Video to Watchlist
+**Endpoint**: `POST /api/user/watchlist/{videoId}`
+
+**Authentication**: Required (JWT token)
+
+#### Remove Video from Watchlist
+**Endpoint**: `DELETE /api/user/watchlist/{videoId}`
+
+**Authentication**: Required (JWT token)
+
+#### Get User's Watchlist
+**Endpoint**: `GET /api/user/watchlist`
+
+**Authentication**: Required (JWT token)
+
+Returns array of videos in user's watchlist with complete information.
+
+### Video View Tracking
+
+The system automatically tracks video views to provide analytics.
+
+#### Record Video View
+**Endpoint**: `POST /api/user/videos/{videoId}/view`
+
+**Authentication**: Required (JWT token)
+
+**Usage**: Call this endpoint when a user opens or starts watching a video. Each user can only contribute one view per video.
+
+#### Get Video View Count
+**Endpoint**: `GET /api/user/videos/{videoId}/views`
+
+**Authentication**: Not required
+
+Returns the total number of unique views for the video.
+
+### Usage Flow
+
+1. User registers and logs in
+2. User selects 1-3 favorite categories
+3. User browses videos
+4. When user opens a video, system records the view
+5. User can add videos to watchlist
+6. User can access watchlist anytime
 
 ## Exception Handling
 

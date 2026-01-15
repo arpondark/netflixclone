@@ -65,12 +65,23 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "video_id"))
     private Set<Video> watchList = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_favorite_categories", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "category_name")
+    private Set<String> favoriteCategories = new HashSet<>();
+
     public void addToWatchList(Video video){
         this.watchList.add(video);
     }
+
     public void removeFromWatchList(Video video){
         this.watchList.remove(video);
     }
 
-
+    public void setFavoriteCategories(Set<String> categories) {
+        if (categories != null && categories.size() > 3) {
+            throw new IllegalArgumentException("Maximum 3 favorite categories allowed");
+        }
+        this.favoriteCategories = categories;
+    }
 }

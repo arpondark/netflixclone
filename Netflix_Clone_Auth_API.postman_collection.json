@@ -402,6 +402,195 @@
       ]
     },
     {
+      "name": "User Features",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "profile"
+              ]
+            },
+            "description": "Get current user's profile including favorite categories"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Favorite Categories",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"favoriteCategories\": [\"Action\", \"Comedy\", \"Drama\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/favorite-categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "favorite-categories"
+              ]
+            },
+            "description": "Update user's favorite categories (minimum 1, maximum 3)"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Video to Watchlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/watchlist/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "watchlist",
+                "1"
+              ]
+            },
+            "description": "Add a video to user's watchlist"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Video from Watchlist",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/watchlist/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "watchlist",
+                "1"
+              ]
+            },
+            "description": "Remove a video from user's watchlist"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Watchlist",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/watchlist",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "watchlist"
+              ]
+            },
+            "description": "Get all videos in user's watchlist"
+          },
+          "response": []
+        },
+        {
+          "name": "Record Video View",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/videos/1/view",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "videos",
+                "1",
+                "view"
+              ]
+            },
+            "description": "Record that user watched a video (call when video is opened/played)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Video View Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/user/videos/1/views",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "videos",
+                "1",
+                "views"
+              ]
+            },
+            "description": "Get total view count for a video"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Admin Management",
       "item": [
         {
