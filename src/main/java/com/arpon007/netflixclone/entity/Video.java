@@ -38,7 +38,7 @@ public class Video {
     @CollectionTable(name = "video_categories", joinColumns = @JoinColumn(name = "video_id"))
     @Column(name = "category")
     private List<String> categories=new ArrayList<>();
-    @Column(name = "poster")
+    @Column(name = "poster", insertable = false, updatable = false)
     private String posterUuid;
 
     @CreationTimestamp
