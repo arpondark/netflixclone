@@ -16,6 +16,7 @@ public class UserResponse {
     private String fullName;
     private String role;
     private boolean active;
+    private boolean emailVerified;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -26,6 +27,7 @@ public class UserResponse {
                 user.getFullName(),
                 user.getRole().name(),
                 user.isActive(),
+                user.isEmailVerified(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

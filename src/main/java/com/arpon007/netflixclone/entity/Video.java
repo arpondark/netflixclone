@@ -26,11 +26,17 @@ public class Video {
     private String description;
     private Integer year;
     private String rating;
+
     @Column(name = "src")
     @JsonIgnore
     private String srcUuid;
-    private String poster;
+
+    @Column(name = "poster")
+    @JsonIgnore
+    private String posterUuid;
+
     private Integer duration;
+
     @Column(nullable = false)
     private boolean published=false;
 
@@ -38,8 +44,6 @@ public class Video {
     @CollectionTable(name = "video_categories", joinColumns = @JoinColumn(name = "video_id"))
     @Column(name = "category")
     private List<String> categories=new ArrayList<>();
-    @Column(name = "poster", insertable = false, updatable = false)
-    private String posterUuid;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

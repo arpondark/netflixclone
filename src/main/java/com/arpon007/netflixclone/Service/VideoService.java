@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface VideoService {
-    VideoResponse upload(VideoRequest request, MultipartFile video) throws IOException;
+    VideoResponse upload(VideoRequest request, MultipartFile video, MultipartFile poster) throws IOException;
 
     List<VideoResponse> getAll();
 

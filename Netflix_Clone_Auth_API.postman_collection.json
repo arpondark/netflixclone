@@ -210,8 +210,451 @@
       ]
     },
     {
+      "name": "Video Management",
+      "item": [
+        {
+          "name": "Upload Video with Poster",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"title\": \"Sample Movie\",\n  \"description\": \"This is a sample movie description with all details about the plot and cast. This field is required and must be provided.\",\n  \"year\": 2024,\n  \"rating\": \"PG-13\",\n  \"duration\": 120,\n  \"published\": true,\n  \"categories\": [\"Action\", \"Adventure\", \"Sci-Fi\"]\n}",
+                  "type": "text",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "/path/to/video.mp4",
+                  "description": "Select video file to upload (REQUIRED)"
+                },
+                {
+                  "key": "poster",
+                  "type": "file",
+                  "src": "/path/to/poster.jpg",
+                  "description": "Select poster/thumbnail image (REQUIRED)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/videos/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "upload"
+              ]
+            },
+            "description": "Upload a video with poster image and full details (Admin only)\n\nREQUIRED Fields:\n- title: Video title (required)\n- description: Full description (required, max 4000 chars)\n- categories: Array of category strings (required, at least one)\n- video: Video file (required)\n- poster: Poster/thumbnail image file (required)\n\nOPTIONAL Fields:\n- year: Release year\n- rating: Content rating like PG-13, R, etc\n- duration: Duration in minutes\n- published: Whether video is published (default: false)"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Video (Minimal Required)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"title\": \"Quick Upload Video\",\n  \"description\": \"This is a required description for the video\",\n  \"categories\": [\"Drama\"]\n}",
+                  "type": "text",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "/path/to/video.mp4"
+                },
+                {
+                  "key": "poster",
+                  "type": "file",
+                  "src": "/path/to/poster.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/videos/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "upload"
+              ]
+            },
+            "description": "Upload video with only required fields:\n- title (required)\n- description (required)\n- categories with at least one value (required)\n- video file (required)\n- poster file (required)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Videos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/videos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "videos"
+              ]
+            },
+            "description": "Get list of all videos"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Category Management",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories"
+              ]
+            },
+            "description": "Get list of all active categories\n\nCategories are auto-seeded when the application starts. No authentication required."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Categories (Including Inactive)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/categories/all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                "all"
+              ]
+            },
+            "description": "Get all categories including inactive ones (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                "1"
+              ]
+            },
+            "description": "Get specific category details by ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Management",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set(\"admin_token\", jsonData.token);",
+                  "  console.log(\"Admin Token saved: \" + jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@netflixclone.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login as admin - Auto-seeded credentials from application.properties"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users"
+              ]
+            },
+            "description": "Get list of all users (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "1"
+              ]
+            },
+            "description": "Get specific user details by ID (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Suspend User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 2,\n  \"active\": false,\n  \"reason\": \"Violation of terms of service\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/suspend",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "suspend"
+              ]
+            },
+            "description": "Suspend or activate a user account (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Activate User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 2,\n  \"active\": true,\n  \"reason\": \"Account reinstated after review\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/suspend",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "suspend"
+              ]
+            },
+            "description": "Activate a suspended user account (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "2"
+              ]
+            },
+            "description": "Permanently delete a user account (Admin only)\n\nNote: Cannot delete admin accounts"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/2/role?role=ADMIN",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "2",
+                "role"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "ADMIN"
+                }
+              ]
+            },
+            "description": "Update user role (USER or ADMIN)\n\nAdmin only operation"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Error Test Cases",
       "item": [
+        {
+          "name": "Admin Access - Unauthorized",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users"
+              ]
+            },
+            "description": "Expected: 403 Forbidden (normal user token cannot access admin endpoints)"
+          },
+          "response": []
+        },
         {
           "name": "Reset Password - Invalid Token",
           "request": {
@@ -372,6 +815,11 @@
     },
     {
       "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
       "value": "",
       "type": "string"
     },

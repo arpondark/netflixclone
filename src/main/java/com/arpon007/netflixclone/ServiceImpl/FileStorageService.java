@@ -16,16 +16,29 @@ public class FileStorageService {
     @Value("${file.upload.video-dir}")
     private String videoDir;
 
-    /*
-    this function is for save video file to the server
+    @Value("${file.upload.image-dir}")
+    private String imageDir;
+
+    /**
+     * Save video file to the server
      */
     public String saveVideo(MultipartFile file) throws IOException {
         Files.createDirectories(Paths.get(videoDir));
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path path = Paths.get(videoDir, fileName);
-        Files.copy(file.getInputStream(), Paths.get(videoDir).resolve(fileName));
+        Files.copy(file.getInputStream(), path);
         return fileName;
     }
 
+    /**
+     * Save image file (poster/thumbnail) to the server
+     */
+    public String saveImage(MultipartFile file) throws IOException {
+        Files.createDirectories(Paths.get(imageDir));
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path path = Paths.get(imageDir, fileName);
+        Files.copy(file.getInputStream(), path);
+        return fileName;
+    }
 
 }

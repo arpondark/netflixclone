@@ -20,13 +20,34 @@ public class VideoServiceImpl implements VideoService {
     private final FileStorageService fileStorageService;
 
     @Override
-    public VideoResponse upload(VideoRequest request, MultipartFile videoFile) throws IOException {
+    public VideoResponse upload(VideoRequest request, MultipartFile videoFile, MultipartFile posterFile) throws IOException {
 
         Video video = new Video();
 
-        // map ONLY existing entity fields
+        // Map all required fields from request
         video.setTitle(request.getTitle());
+        video.setDescription(request.getDescription());
+
+        // Set optional fields
+        video.setYear(request.getYear());
+        video.setRating(request.getRating());
+        video.setDuration(request.getDuration());
+        video.setPublished(request.isPublished());
+
+        // Set categories (required)
+        if (request.getCategories() != null && !request.getCategories().isEmpty()) {
+            video.setCategories(request.getCategories());
+        }
+
+        // Save video file (required)
         video.setSrcUuid(fileStorageService.saveVideo(videoFile));
+
+        // Save poster image (required)
+        if (posterFile != null && !posterFile.isEmpty()) {
+            video.setPosterUuid(fileStorageService.saveImage(posterFile));
+        } else {
+            throw new IllegalArgumentException("Poster image is required");
+        }
 
         Video saved = videoRepository.save(video);
 
