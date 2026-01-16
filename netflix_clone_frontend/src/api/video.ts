@@ -58,4 +58,13 @@ export const videoApi = {
     }),
 
   delete: (id: number) => axios.delete<void>(`/videos/${id}`),
+
+  rateVideo: (videoId: number, rating: number) =>
+    axios.post('/ratings', { videoId, rating }),
+
+  getRatingStats: (videoId: number) =>
+    axios.get<{ average: number; count: number }>(`/ratings/video/${videoId}/stats`),
+
+  getUserRating: (videoId: number) =>
+    axios.get<number>(`/ratings/video/${videoId}/user`),
 }

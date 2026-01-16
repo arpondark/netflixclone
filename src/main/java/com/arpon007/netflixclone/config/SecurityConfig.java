@@ -23,6 +23,7 @@ public class SecurityConfig {
             "/api/auth/**",
             "/api/files/image/**",
             "/api/files/video/**",
+            "/api/ratings/video/**"
     };
 
     @Bean

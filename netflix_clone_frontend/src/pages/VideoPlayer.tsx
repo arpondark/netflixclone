@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { videoApi, type Video } from '../api/video'
 import { userApi } from '../api/user'
 import { useAuth } from '../context/AuthContext'
+import StarRating from '../components/StarRating'
 
 export default function VideoPlayer() {
   const { id } = useParams<{ id: string }>()
   const [video, setVideo] = useState<Video | null>(null)
   const [viewCount, setViewCount] = useState<number>(0)
+  const [userRating, setUserRating] = useState<number>(0)
+  const [ratingStats, setRatingStats] = useState<{ average: number; count: number }>({ average: 0, count: 0 })
   const [loading, setLoading] = useState(true)
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
@@ -16,8 +19,10 @@ export default function VideoPlayer() {
     if (id) {
       fetchVideo()
       fetchViewCount()
+      fetchRatingStats()
       if (isAuthenticated) {
         recordView()
+        fetchUserRating()
       }
     }
   }, [id, isAuthenticated])
@@ -34,6 +39,40 @@ export default function VideoPlayer() {
       setLoading(false)
     }
   }
+
+  const fetchRatingStats = async () => {
+    try {
+      const response = await videoApi.getRatingStats(Number(id))
+      setRatingStats(response.data)
+    } catch (error) {
+      console.error('Error fetching rating stats:', error)
+    }
+  }
+
+  const fetchUserRating = async () => {
+    try {
+      const response = await videoApi.getUserRating(Number(id))
+      setUserRating(response.data)
+    } catch (error) {
+      console.error('Error fetching user rating:', error)
+    }
+  }
+
+  const handleRate = async (rating: number) => {
+    if (!isAuthenticated) {
+      alert('Please login to rate videos')
+      return
+    }
+    try {
+      await videoApi.rateVideo(Number(id), rating)
+      setUserRating(rating)
+      fetchRatingStats() // Refresh stats
+    } catch (error) {
+      console.error('Error rating video:', error)
+    }
+  }
+
+
 
   const fetchViewCount = async () => {
     try {
@@ -140,6 +179,22 @@ export default function VideoPlayer() {
                 <span className="ml-2">
                   {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Unknown'}
                 </span>
+              </div>
+              <div className="pt-4 border-t border-gray-700">
+                <span className="text-text-secondary block mb-2">Rating:</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <StarRating 
+                    rating={userRating} 
+                    onRate={handleRate} 
+                    readonly={!isAuthenticated} 
+                  />
+                  <span className="text-xs text-text-secondary">
+                    {isAuthenticated ? '(Click to rate)' : '(Login to rate)'}
+                  </span>
+                </div>
+                <div className="text-xs text-text-secondary">
+                  Average: {ratingStats.average.toFixed(1)} ({ratingStats.count} ratings)
+                </div>
               </div>
             </div>
           </div>
