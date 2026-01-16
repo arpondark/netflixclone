@@ -44,7 +44,7 @@ public class AdminSeeder implements CommandLineRunner {
 
         User admin = new User();
         admin.setEmail(adminEmail);
-        admin.setPassword(adminPassword);
+        admin.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(adminPassword));
         admin.setFullName(adminFullName);
         admin.setRole(Role.ADMIN);
         admin.setActive(true);

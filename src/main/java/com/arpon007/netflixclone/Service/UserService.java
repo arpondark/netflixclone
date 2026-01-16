@@ -1,5 +1,6 @@
 package com.arpon007.netflixclone.Service;
 
+import com.arpon007.netflixclone.DTO.request.UpdateProfileRequest;
 import com.arpon007.netflixclone.DTO.response.MessageResponse;
 import com.arpon007.netflixclone.DTO.response.UserResponse;
 import com.arpon007.netflixclone.DTO.response.VideoResponse;
@@ -21,5 +22,12 @@ public interface UserService {
 
     MessageResponse recordVideoView(String email, Long videoId);
 
+    MessageResponse uploadAvatar(String email, org.springframework.web.multipart.MultipartFile file)
+            throws java.io.IOException;
+
     Long getVideoViewCount(Long videoId);
+
+    MessageResponse updateProfile(String email, UpdateProfileRequest request);
+
+    MessageResponse deleteAccount(String email);
 }

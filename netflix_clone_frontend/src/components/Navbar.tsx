@@ -49,8 +49,17 @@ export default function Navbar() {
         {isAuthenticated && user ? (
           <div className="relative group">
             <button className="flex items-center gap-2 cursor-pointer focus:outline-none">
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded overflow-hidden">
-                <img src="/placeholder.png" alt="Profile" className="w-full h-full object-cover" />
+              <div 
+                className="w-8 h-8 md:w-10 md:h-10 rounded overflow-hidden flex items-center justify-center font-bold text-white shadow-sm border border-white/20"
+                style={{ 
+                  backgroundColor: !user.avatar && user.email ? `hsl(${Math.abs(user.email.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0)) % 360}, 70%, 50%)` : undefined
+                }}
+              >
+                {user.avatar ? (
+                  <img src={`http://localhost:8080/api/files/image/${user.avatar}`} alt={user.fullName} className="w-full h-full object-cover" />
+                ) : (
+                  user.fullName ? user.fullName.substring(0, 2).toUpperCase() : 'U'
+                )}
               </div>
               <svg className={`w-4 h-4 text-white transition-transform duration-300 group-hover:rotate-180`} fill="currentColor" viewBox="0 0 20 20">
                 <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />

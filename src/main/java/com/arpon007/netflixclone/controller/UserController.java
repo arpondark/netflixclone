@@ -1,6 +1,7 @@
 package com.arpon007.netflixclone.controller;
 
 import com.arpon007.netflixclone.DTO.request.UpdateFavoriteCategoriesRequest;
+import com.arpon007.netflixclone.DTO.request.UpdateProfileRequest;
 import com.arpon007.netflixclone.DTO.response.MessageResponse;
 import com.arpon007.netflixclone.DTO.response.UserResponse;
 import com.arpon007.netflixclone.DTO.response.VideoResponse;
@@ -27,6 +28,34 @@ public class UserController {
     public ResponseEntity<UserResponse> getProfile() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(userService.getUserProfile(email));
+    }
+
+    /**
+     * Update user profile (name and email)
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<MessageResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(userService.updateProfile(email, request));
+    }
+
+    /**
+     * Upload user avatar
+     */
+    @PostMapping("/avatar")
+    public ResponseEntity<MessageResponse> uploadAvatar(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(userService.uploadAvatar(email, file));
+    }
+
+    /**
+     * Delete user account
+     */
+    @DeleteMapping("/account")
+    public ResponseEntity<MessageResponse> deleteAccount() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(userService.deleteAccount(email));
     }
 
     /**

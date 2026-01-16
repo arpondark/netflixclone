@@ -51,18 +51,22 @@ public class User {
     private Instant passwordRestTokenExpiry;
 
     @CreationTimestamp
-    @Column(nullable = false,updatable = false)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column
+    private String avatar;
+
+    @Column
+    private Integer age;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_watchlist",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "video_id"))
+    @JoinTable(name = "user_watchlist", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "video_id"))
     private Set<Video> watchList = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -70,11 +74,11 @@ public class User {
     @Column(name = "category_name")
     private Set<String> favoriteCategories = new HashSet<>();
 
-    public void addToWatchList(Video video){
+    public void addToWatchList(Video video) {
         this.watchList.add(video);
     }
 
-    public void removeFromWatchList(Video video){
+    public void removeFromWatchList(Video video) {
         this.watchList.remove(video);
     }
 

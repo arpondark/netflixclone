@@ -10,6 +10,7 @@ import com.arpon007.netflixclone.enums.Role;
 import com.arpon007.netflixclone.exception.BadCredentialException;
 import com.arpon007.netflixclone.exception.EmailAlreadyExistsException;
 import com.arpon007.netflixclone.exception.InvalidCredentialsExpection;
+import com.arpon007.netflixclone.exception.ResourceNotFoundExCeption;
 import com.arpon007.netflixclone.Security.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     /**
      * Register a new user
      */
@@ -48,7 +52,7 @@ public class AuthController {
         User user = new User();
         user.setEmail(userRequest.getEmail());
         user.setFullName(userRequest.getFullName());
-        user.setPassword(userRequest.getPassword()); // Note: Should be hashed in production
+        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         user.setRole(userRequest.getRole() != null ? Role.valueOf(userRequest.getRole()) : Role.USER);
         user.setActive(userRequest.getActive() != null ? userRequest.getActive() : true);
         user.setEmailVerified(false);
@@ -67,7 +71,7 @@ public class AuthController {
         // Find user by email
         Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
         if (userOptional.isEmpty()) {
-            throw new BadCredentialException("Invalid email or password");
+            throw new ResourceNotFoundExCeption("User not registered");
         }
 
         User user = userOptional.get();
@@ -77,9 +81,9 @@ public class AuthController {
             throw new InvalidCredentialsExpection("Account is deactivated");
         }
 
-        // Verify password (In production, use BCryptPasswordEncoder)
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
-            throw new BadCredentialException("Invalid email or password");
+        // Verify password
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new BadCredentialException("Username or password is wrong");
         }
 
         // Generate JWT token
@@ -90,8 +94,8 @@ public class AuthController {
                 token,
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole().toString()
-        );
+                user.getRole().toString(),
+                user.getAvatar());
 
         return ResponseEntity.ok(response);
     }
@@ -118,7 +122,8 @@ public class AuthController {
      * Change password for authenticated user
      */
     @PostMapping("/change-password")
-    public ResponseEntity<MessageResponse> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+    public ResponseEntity<MessageResponse> changePassword(
+            @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         MessageResponse response = authService.changePassword(changePasswordRequest, userEmail);
         return ResponseEntity.ok(response);

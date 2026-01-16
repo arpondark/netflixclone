@@ -75,8 +75,8 @@ export default function VideoPlayer() {
     )
   }
 
-  const streamUrl = videoApi.stream(video.id)
-  const posterUrl = videoApi.getPoster(video.posterUuid)
+  const streamUrl = video.src || (video.srcUuid ? videoApi.stream(video.srcUuid) : '')
+  const posterUrl = video.poster || (video.posterUuid ? videoApi.getPoster(video.posterUuid) : '')
 
   return (
     <div className="min-h-screen bg-primary">
@@ -119,7 +119,9 @@ export default function VideoPlayer() {
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{video.title}</h1>
             <p className="text-lg text-text-secondary mb-6">{video.description}</p>
             <div className="flex flex-wrap gap-4 text-sm text-text-secondary">
-              <span className="bg-secondary px-3 py-1 rounded">{video.category}</span>
+              <span className="bg-secondary px-3 py-1 rounded">
+                {video.categories && video.categories.length > 0 ? video.categories[0] : 'Movie'}
+              </span>
               <span>Views: {viewCount}</span>
             </div>
           </div>
@@ -130,13 +132,13 @@ export default function VideoPlayer() {
               <div>
                 <span className="text-text-secondary">Duration:</span>
                 <span className="ml-2">
-                  {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
+                  {video.duration ? `${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}` : 'N/A'}
                 </span>
               </div>
               <div>
                 <span className="text-text-secondary">Added:</span>
                 <span className="ml-2">
-                  {new Date(video.createdAt).toLocaleDateString()}
+                  {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Unknown'}
                 </span>
               </div>
             </div>

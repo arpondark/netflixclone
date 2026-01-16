@@ -38,12 +38,12 @@ public class Video {
     private Integer duration;
 
     @Column(nullable = false)
-    private boolean published=false;
+    private boolean published = false;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "video_categories", joinColumns = @JoinColumn(name = "video_id"))
     @Column(name = "category")
-    private List<String> categories=new ArrayList<>();
+    private List<String> categories = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -74,10 +74,9 @@ public class Video {
             String baseUrl = ServletUriComponentsBuilder
                     .fromCurrentContextPath()
                     .toUriString();
-            return baseUrl + "/api/files/video/" + posterUuid;
+            return baseUrl + "/api/files/image/" + posterUuid;
         }
         return null;
     }
-
 
 }

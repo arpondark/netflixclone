@@ -19,6 +19,8 @@ public class UserResponse {
     private boolean active;
     private boolean emailVerified;
     private Set<String> favoriteCategories;
+    private String avatar;
+    private Integer age;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -31,9 +33,10 @@ public class UserResponse {
                 user.isActive(),
                 user.isEmailVerified(),
                 user.getFavoriteCategories(),
+                user.getAvatar(),
+                user.getAge(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
+                user.getUpdatedAt());
     }
 
 }

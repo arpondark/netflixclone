@@ -1,6 +1,7 @@
 package com.arpon007.netflixclone.controller;
 
 import com.arpon007.netflixclone.DTO.request.SuspendUserRequest;
+import com.arpon007.netflixclone.DTO.request.UpdateAdminProfileRequest;
 import com.arpon007.netflixclone.DTO.response.MessageResponse;
 import com.arpon007.netflixclone.DTO.response.UserResponse;
 import com.arpon007.netflixclone.Service.AdminService;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,5 +71,14 @@ public class AdminController {
             @RequestParam String role) {
         MessageResponse response = adminService.updateUserRole(userId, role);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Update admin profile
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<MessageResponse> updateAdminProfile(@Valid @RequestBody UpdateAdminProfileRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(adminService.updateAdminProfile(email, request));
     }
 }

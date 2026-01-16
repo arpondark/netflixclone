@@ -7,8 +7,9 @@ export interface UserResponse {
   role: string
   active: boolean
   emailVerified: boolean
-  favoriteCategories: string[]
+  favoriteCategories: string[] | Set<string>
   createdAt: string
+  updatedAt: string
 }
 
 export interface SuspendUserRequest {

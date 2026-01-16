@@ -10,6 +10,7 @@ export interface LoginResponse {
   email: string
   fullName: string
   role: string
+  avatar?: string
 }
 
 export interface RegisterRequest {
@@ -53,4 +54,11 @@ export const authApi = {
 
   changePassword: (data: ChangePasswordRequest) =>
     axios.post<MessageResponse>('/auth/change-password', data),
+
+  logout: () => {
+    // Client-side logout (clear local storage)
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    return Promise.resolve()
+  },
 }

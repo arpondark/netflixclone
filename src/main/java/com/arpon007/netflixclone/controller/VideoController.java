@@ -21,16 +21,31 @@ public class VideoController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<VideoResponse> uplloadVideo(
+    public ResponseEntity<VideoResponse> uploadVideo(
             @Valid @RequestPart("data") VideoRequest request,
             @RequestPart("video") MultipartFile video,
-            @RequestPart("poster") MultipartFile poster
-    ) throws IOException {
+            @RequestPart("poster") MultipartFile poster) throws IOException {
         return ResponseEntity.ok(videoService.upload(request, video, poster));
     }
 
     @GetMapping
     public ResponseEntity<List<VideoResponse>> list() {
         return ResponseEntity.ok(videoService.getAll());
+    }
+
+    @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<VideoResponse> updateVideo(
+            @PathVariable Long id,
+            @RequestPart("data") com.arpon007.netflixclone.DTO.request.UpdateVideoRequest request,
+            @RequestPart(value = "poster", required = false) MultipartFile poster) throws IOException {
+        return ResponseEntity.ok(videoService.update(id, request, poster));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteVideo(@PathVariable Long id) {
+        videoService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

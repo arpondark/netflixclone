@@ -1,26 +1,30 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Toast from '../components/Toast'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setError('')
+    setToast(null)
     setIsLoading(true)
 
     try {
       await login({ email, password })
       navigate('/browse')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.')
+      setToast({ 
+        message: err.response?.data?.message || 'Login failed. Please try again.',
+        type: 'error'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -28,6 +32,13 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black text-white font-sans">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       {/* Background with Overlay */}
       <div 
         className="absolute inset-x-0 inset-y-0 bg-cover bg-center z-0 opacity-50 md:opacity-100"
@@ -47,14 +58,7 @@ export default function Login() {
         <div className="w-full max-w-[450px] bg-black/75 md:bg-black/75 p-8 md:p-16 rounded shadow-2xl">
           <h2 className="text-3xl font-bold mb-7">Sign In</h2>
           
-          {error && (
-            <div className="bg-[#e87c03] text-white p-3 rounded text-[14px] mb-4 flex items-start gap-2">
-              <span className="mt-1">
-                <svg width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12zM8 4a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 4zm0 7a.5.5 0 1 1 0 1 .5.5 0 0 1 0-1z"/></svg>
-              </span>
-              {error}
-            </div>
-          )}
+
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Email Field with Manual Floating Label */}

@@ -1,5 +1,6 @@
 package com.arpon007.netflixclone.ServiceImpl;
 
+import com.arpon007.netflixclone.DTO.request.UpdateAdminProfileRequest;
 import com.arpon007.netflixclone.DTO.response.MessageResponse;
 import com.arpon007.netflixclone.DTO.response.UserResponse;
 import com.arpon007.netflixclone.Service.AdminService;
@@ -26,6 +27,7 @@ public class AdminServiceImpl implements AdminService {
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
+                .filter(user -> user.getRole() != Role.ADMIN)
                 .map(this::convertToUserResponse)
                 .collect(Collectors.toList());
     }
@@ -93,16 +95,28 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    @Override
+    @Transactional
+    public MessageResponse updateAdminProfile(String email, UpdateAdminProfileRequest request) {
+        User admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundExCeption("Admin user not found"));
+
+        // Check if new email already exists (if changed)
+        if (!admin.getEmail().equals(request.getEmail())) {
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new IllegalArgumentException("Email already in use");
+            }
+            admin.setEmail(request.getEmail());
+        }
+
+        admin.setFullName(request.getFullName());
+        userRepository.save(admin);
+        log.info("Admin {} profile updated", email);
+
+        return new MessageResponse("Admin profile updated successfully");
+    }
+
     private UserResponse convertToUserResponse(User user) {
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setEmail(user.getEmail());
-        response.setFullName(user.getFullName());
-        response.setRole(user.getRole().toString());
-        response.setActive(user.isActive());
-        response.setEmailVerified(user.isEmailVerified());
-        response.setCreatedAt(user.getCreatedAt());
-        response.setUpdatedAt(user.getUpdatedAt());
-        return response;
+        return UserResponse.from(user);
     }
 }

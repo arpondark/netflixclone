@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Update password
-        user.setPassword(newPassword);
+        user.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(newPassword));
         user.setPasswordRestToken(null);
         user.setPasswordRestTokenExpiry(null);
         userRepository.save(user);
@@ -110,12 +110,13 @@ public class AuthServiceImpl implements AuthService {
         User user = userOptional.get();
 
         // Verify current password
-        if (!user.getPassword().equals(changePasswordRequest.getCurrentPassword())) {
+        org.springframework.security.crypto.password.PasswordEncoder encoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+        if (!encoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword())) {
             throw new BadCredentialException("Current password is incorrect");
         }
 
         // Update password
-        user.setPassword(changePasswordRequest.getNewPassword());
+        user.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
         userRepository.save(user);
 
         return new MessageResponse("Password has been changed successfully");

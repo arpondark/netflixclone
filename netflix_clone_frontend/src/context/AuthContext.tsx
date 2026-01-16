@@ -8,6 +8,7 @@ interface User {
   emailVerified: boolean
   active: boolean
   favoriteCategories: string[]
+  avatar?: string
 }
 
 interface AuthContextType {
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (credentials: LoginRequest) => {
     const response = await authApi.login(credentials)
-    const { token, email, fullName, role } = response.data
+    const { token, email, fullName, role, avatar } = response.data
     
     const userData: User = {
       email,
@@ -56,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       emailVerified: false,
       active: true,
       favoriteCategories: [],
+      avatar,
     }
 
     localStorage.setItem('token', token)
