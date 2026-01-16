@@ -5,75 +5,64 @@ import { userApi } from '../api/user'
 import { useAuth } from '../context/AuthContext'
 import StarRating from '../components/StarRating'
 
+/**
+ * VideoPlayer Page Component.
+ * Displays the video player, video details, and handles user interactions like viewing and rating.
+ */
 export default function VideoPlayer() {
+  // Get video ID from URL parameters
   const { id } = useParams<{ id: string }>()
+  
+  // State for storing the video details
   const [video, setVideo] = useState<Video | null>(null)
+  
+  // State for total view count
   const [viewCount, setViewCount] = useState<number>(0)
+  
+  // State for the current user's rating (1-5)
   const [userRating, setUserRating] = useState<number>(0)
+  
+  // State for aggregate rating statistics (average and count)
   const [ratingStats, setRatingStats] = useState<{ average: number; count: number }>({ average: 0, count: 0 })
+  
+  // State for loading status
   const [loading, setLoading] = useState(true)
+  
+  // Auth context to check if user is logged in
   const { isAuthenticated } = useAuth()
+  
+  // Hook for programmatic navigation
   const navigate = useNavigate()
 
+  // Effect hook to load data when component mounts or ID/Auth state changes
   useEffect(() => {
     if (id) {
-      fetchVideo()
-      fetchViewCount()
-      fetchRatingStats()
+      fetchVideo()      // Fetch video metadata
+      fetchViewCount()  // Fetch view count
+      fetchRatingStats() // Fetch rating stats
       if (isAuthenticated) {
-        recordView()
-        fetchUserRating()
+        recordView()      // Record a new view if user is logged in
+        fetchUserRating() // Fetch user's personal rating if logged in
       }
     }
   }, [id, isAuthenticated])
 
+  // Fetches video details from the API
   const fetchVideo = async () => {
     try {
-      setLoading(true)
+      setLoading(true) // Start loading
+      // Currently fetches all videos and filters by ID (Optimization: Should ideally fetch by ID directly)
       const videosResponse = await videoApi.getAll()
       const foundVideo = videosResponse.data.find((v) => v.id === Number(id))
       setVideo(foundVideo || null)
     } catch (error) {
       console.error('Error fetching video:', error)
     } finally {
-      setLoading(false)
+      setLoading(false) // Stop loading
     }
   }
 
-  const fetchRatingStats = async () => {
-    try {
-      const response = await videoApi.getRatingStats(Number(id))
-      setRatingStats(response.data)
-    } catch (error) {
-      console.error('Error fetching rating stats:', error)
-    }
-  }
-
-  const fetchUserRating = async () => {
-    try {
-      const response = await videoApi.getUserRating(Number(id))
-      setUserRating(response.data)
-    } catch (error) {
-      console.error('Error fetching user rating:', error)
-    }
-  }
-
-  const handleRate = async (rating: number) => {
-    if (!isAuthenticated) {
-      alert('Please login to rate videos')
-      return
-    }
-    try {
-      await videoApi.rateVideo(Number(id), rating)
-      setUserRating(rating)
-      fetchRatingStats() // Refresh stats
-    } catch (error) {
-      console.error('Error rating video:', error)
-    }
-  }
-
-
-
+  // Fetches total view count for the video
   const fetchViewCount = async () => {
     try {
       const response = await videoApi.getViewCount(Number(id))
@@ -83,14 +72,54 @@ export default function VideoPlayer() {
     }
   }
 
+  // Helper to record that the user is viewing this video
   const recordView = async () => {
     try {
-      await userApi.addToWatchlist(Number(id))
+      await userApi.addToWatchlist(Number(id)) // Note: The method name addToWatchlist might be reused logic or misnamed, checking context implies view recording logic in API
     } catch (error) {
       console.error('Error recording view:', error)
     }
   }
 
+  // Fetches statistics (average rating, total ratings)
+  const fetchRatingStats = async () => {
+    try {
+      const response = await videoApi.getRatingStats(Number(id))
+      setRatingStats(response.data)
+    } catch (error) {
+      console.error('Error fetching rating stats:', error)
+    }
+  }
+
+  // Fetches the specific rating given by the logged-in user
+  const fetchUserRating = async () => {
+    try {
+      const response = await videoApi.getUserRating(Number(id))
+      setUserRating(response.data)
+    } catch (error) {
+      console.error('Error fetching user rating:', error)
+    }
+  }
+
+  // Handler for when a user clicks a star to rate the video
+  const handleRate = async (rating: number) => {
+    if (!isAuthenticated) {
+      alert('Please login to rate videos') // Prompt login if guest
+      return
+    }
+    try {
+      // Call API to submit rating
+      await videoApi.rateVideo(Number(id), rating)
+      // Update local state to reflect new rating
+      setUserRating(rating)
+      // Refresh stats to show updated average
+      fetchRatingStats() 
+    } catch (error) {
+      console.error('Error rating video:', error)
+    }
+  }
+
+  // Render Loading Spinner
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -99,6 +128,7 @@ export default function VideoPlayer() {
     )
   }
 
+  // Render "Not Found" state
   if (!video) {
     return (
       <div className="flex flex-col items-center justify-center h-screen px-4">
@@ -114,12 +144,14 @@ export default function VideoPlayer() {
     )
   }
 
+  // Determine stream and poster URLs
   const streamUrl = video.src || (video.srcUuid ? videoApi.stream(video.srcUuid) : '')
   const posterUrl = video.poster || (video.posterUuid ? videoApi.getPoster(video.posterUuid) : '')
 
   return (
     <div className="min-h-screen bg-primary">
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="text-text-secondary hover:text-white mb-6 inline-flex items-center gap-2"
@@ -140,6 +172,7 @@ export default function VideoPlayer() {
           Back
         </button>
 
+        {/* Video Player Container */}
         <div className="aspect-video w-full bg-black rounded-lg overflow-hidden mb-8">
           <video
             src={streamUrl}
@@ -153,7 +186,9 @@ export default function VideoPlayer() {
           />
         </div>
 
+        {/* Video Details Section */}
         <div className="grid md:grid-cols-3 gap-8">
+          {/* Main Content: Title, Description, Categories */}
           <div className="md:col-span-2">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{video.title}</h1>
             <p className="text-lg text-text-secondary mb-6">{video.description}</p>
@@ -165,6 +200,7 @@ export default function VideoPlayer() {
             </div>
           </div>
 
+          {/* Sidebar: Metadata and Rating */}
           <div className="bg-secondary rounded-lg p-6 h-fit">
             <h3 className="font-semibold mb-4">Video Info</h3>
             <div className="space-y-3 text-sm">
@@ -180,6 +216,8 @@ export default function VideoPlayer() {
                   {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Unknown'}
                 </span>
               </div>
+              
+              {/* Rating Section UI */}
               <div className="pt-4 border-t border-gray-700">
                 <span className="text-text-secondary block mb-2">Rating:</span>
                 <div className="flex items-center gap-2 mb-2">
